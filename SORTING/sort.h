@@ -55,9 +55,8 @@ void insertionSortX(Itr begin, Itr end) {
      }
     std::swap(*begin, *min);
     */
-
-    // 从尾到头，转换逆序对，最终*begin最小
-    for (Itr i = end; i != begin; --i) {
+    
+    for (Itr i = end - 1; i != begin; --i) {
         if (*i < *(i - 1)) {
             std::swap(*i, *(i - 1));
         }

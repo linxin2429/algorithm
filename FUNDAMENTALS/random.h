@@ -149,13 +149,13 @@ public:
     template<typename It>
     static auto max_(It beg, It end) -> decltype(*beg)
     {
-        return std::max(beg, end);
+        return (std::max)(beg, end);
     }
 
     template<typename It>
     static auto min_(It beg, It end) -> decltype(*beg)
     {
-        return std::min(beg, end);
+        return (std::min)(beg, end);
     }
 
     template<typename It>

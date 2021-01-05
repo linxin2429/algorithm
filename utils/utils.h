@@ -38,6 +38,7 @@ private:
     LARGE_INTEGER Frequency;
 public:
     Stopwatch() {
+        StartingTime.QuadPart = EndingTime.QuadPart = ElapsedMicroseconds.QuadPart  = Frequency.QuadPart = 0;
         QueryPerformanceCounter(&StartingTime);
     }
 
