@@ -55,7 +55,7 @@ void insertionSortX(Itr begin, Itr end) {
      }
     std::swap(*begin, *min);
     */
-
+    // 从后往前交换逆序对，并使得第一个元素最小
     for (auto i = end - 1; i != begin; --i) {
         if (*i < *(i - 1)) {
             std::swap(*i, *(i - 1));
@@ -68,6 +68,24 @@ void insertionSortX(Itr begin, Itr end) {
         for (; value < *(j - 1); --j)
             *j = std::move(*(j - 1));
         *j = std::move(value);
+    }
+}
+
+template<typename Itr>
+void shellSort(Itr begin, Itr end) {
+    int len = end - begin;
+    int h = 1;
+    while (h < len / 3)
+        h = 3 * h + 1;
+    while (h >= 1) {
+        for (int i = h; i < len; ++i) {
+            auto value = *(begin + i);
+            auto j = begin + i;
+            for (; j >= begin + h && value < *(j-h); j -= h)
+                *j = std::move(*(j - h));
+            *j = std::move(value);
+        }
+        h /= 3;
     }
 }
 
@@ -90,13 +108,16 @@ double testSort(const string &s, vector<double> &v) {
         insertionSort(beg, end);
     else if ("InsertionSortX" == s)
         insertionSortX(beg, end);
+    else if ("ShellSort" == s)
+        shellSort(beg, end);
 
     return stopwatch.elapsedTime();
 }
 
 
 template<typename Func>
-double testRandomInput(Func testSort, const std::string &alg, int N, int T) { //使用算法将长度为N的数组排序T次
+double testRandomInput(Func testSort, const std::string &alg, int N, int T) {
+    //使用算法将长度为N的数组排序T次
     double total = 0;
     std::vector<double> a(N);
     static Random r;
@@ -126,12 +147,15 @@ void testSorting(int N, int T) {
     for (int i = 0; i < N; ++i)
         vec.push_back(random.uniform());
 
-    double t1 = testRandomInput(testSort,"SelectionSort",N,T);
-    double t2 = testRandomInput(testSort,"InsertionSort",N,T);
-    double t3 = testRandomInput(testSort,"InsertionSortX",N,T);
+    double t1 = testRandomInput(testSort, "SelectionSort", N, T);
+    double t2 = testRandomInput(testSort, "InsertionSort", N, T);
+    double t3 = testRandomInput(testSort, "InsertionSortX", N, T);
+    double t4 = testRandomInput(testSort, "ShellSort", N, T);
+
     cout << "##########\n" << "the speed ratio :  \n";
     cout << "InsertionSort / SelectionSort = " << t1 / t2 << "\n";
-    cout << "InsertionSortX / SelectionSort = " << t1 / t3 << "\n" << endl;
+    cout << "InsertionSortX / SelectionSort = " << t1 / t3 << "\n";
+    cout << "ShellSortX / SelectionSort = " << t1 / t4 << "\n" << endl;
 }
 
 #endif //ALGORITHM_SORT_H
