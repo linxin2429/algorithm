@@ -55,8 +55,8 @@ void insertionSortX(Itr begin, Itr end) {
      }
     std::swap(*begin, *min);
     */
-    
-    for (Itr i = end - 1; i != begin; --i) {
+
+    for (auto i = end - 1; i != begin; --i) {
         if (*i < *(i - 1)) {
             std::swap(*i, *(i - 1));
         }
@@ -80,7 +80,7 @@ bool isSorted(vector<Type> &v) {
     return true;
 }
 
-double testSort(const string &s, vector<double> v) {
+double testSort(const string &s, vector<double> &v) {
     auto beg = v.begin();
     auto end = v.end();
     Stopwatch stopwatch;
@@ -91,14 +91,34 @@ double testSort(const string &s, vector<double> v) {
     else if ("InsertionSortX" == s)
         insertionSortX(beg, end);
 
-    double time = stopwatch.elapsedTime();
-    cout << "##############\n" << s << endl;
-    cout << boolalpha << "the result is :" << isSorted(v) << endl;
-    cout << s << " spends " << time << "ms" << endl;
-    return time;
+    return stopwatch.elapsedTime();
 }
 
-void testSorting(int N) {
+
+template<typename Func>
+double testRandomInput(Func testSort, const std::string &alg, int N, int T) { //使用算法将长度为N的数组排序T次
+    double total = 0;
+    std::vector<double> a(N);
+    static Random r;
+    bool sorted = true;
+    for (int t = 0; t < T; ++t) {
+        for (int i = 0; i < N; ++i)
+            a[i] = r.uniform(0, 1);
+
+        total += testSort(alg, a);
+        if (!isSorted(a)) {
+            sorted = false;
+            break;
+        }
+    }
+
+    cout << "##############\n" << alg << endl;
+    cout << boolalpha << "the result is :" << sorted << endl;
+    cout << alg << " spends " << total << "ms" << endl;
+    return total;
+}
+
+void testSorting(int N, int T) {
     Random random;
     random.setSeed(time(nullptr));
     vector<double> vec;
@@ -106,12 +126,12 @@ void testSorting(int N) {
     for (int i = 0; i < N; ++i)
         vec.push_back(random.uniform());
 
-    double t1 = testSort("SelectionSort", vec);
-    double t2 = testSort("InsertionSort", vec);
-    double t3 = testSort("InsertionSortX", vec);
+    double t1 = testRandomInput(testSort,"SelectionSort",N,T);
+    double t2 = testRandomInput(testSort,"InsertionSort",N,T);
+    double t3 = testRandomInput(testSort,"InsertionSortX",N,T);
     cout << "##########\n" << "the speed ratio :  \n";
     cout << "InsertionSort / SelectionSort = " << t1 / t2 << "\n";
-    cout << "InsertionSortX / SelectionSort = " <<t1/ t3 << "\n" << endl;
+    cout << "InsertionSortX / SelectionSort = " << t1 / t3 << "\n" << endl;
 }
 
 #endif //ALGORITHM_SORT_H
