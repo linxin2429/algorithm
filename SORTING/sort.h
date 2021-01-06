@@ -11,7 +11,7 @@
 #include <algorithm>
 #include "../FUNDAMENTALS/random.h"
 #include "../utils/utils.h"
-
+#include "PQ.h"
 using namespace std;
 
 template<typename Itr>
@@ -338,7 +338,15 @@ void quickSort(Itr beg, Itr end) {
     _QuickSort<Itr>(beg, end);
 }
 
-
+template <typename Itr>
+void heapSort(Itr beg,Itr end){
+    using value_type = typename iterator_traits<Itr>::value_type;
+    PQ<value_type,std::greater<value_type>> pq(beg,end);
+    auto i = beg;
+    while (!pq.isEmpty()){
+        *i++ = pq.pop();
+    }
+}
 /*
  * #############
  *  以下为辅助函数
@@ -374,7 +382,8 @@ double testSort(const string &s, vector<double> &v) {
         mergeBUSort(beg, end);
     else if ("QuickSort" == s)
         quickSort(beg, end);
-
+    else if ("HeapSort" == s)
+        heapSort(beg,end);
     return stopwatch.elapsedTime();
 }
 
@@ -419,6 +428,7 @@ void testSorting(int N, int T) {
     double t6 = testRandomInput(testSort, "MergeSortX", N, T);
     double t7 = testRandomInput(testSort, "MergeBUSort", N, T);
     double t8 = testRandomInput(testSort, "QuickSort", N, T);
+    double t9 = testRandomInput(testSort, "HeapSort", N, T);
 
     cout << "##########\n" << "the speed ratio :  \n";
     cout << "InsertionSort / SelectionSort = " << t1 / t2 << "\n";
@@ -427,7 +437,8 @@ void testSorting(int N, int T) {
     cout << "MergeSort / SelectionSort = " << t1 / t5 << "\n";
     cout << "MergeSortX / SelectionSort = " << t1 / t6 << "\n";
     cout << "MergeBUSort / SelectionSort = " << t1 / t7 << "\n";
-    cout << "QuickSort / SelectionSort = " << t1 / t8 << "\n" << endl;
+    cout << "QuickSort / SelectionSort = " << t1 / t8 << "\n";
+    cout << "HeapSort / SelectionSort = " << t1 / t9 << "\n" << endl;
 }
 
 #endif //ALGORITHM_SORT_H
