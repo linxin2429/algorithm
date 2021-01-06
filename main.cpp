@@ -8,6 +8,6 @@
 int main() {
     //BinarySearch::test();
     //UF::test();
-    testSorting(10000,10);
+    testSorting(100000,1);
 
 }

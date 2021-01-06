@@ -224,7 +224,7 @@ private:
         int N = end - beg;
         for (int sz = 1; sz < N; sz += sz) {
             for (int i = 0; i < N - sz; i += (sz + sz)) {
-                merge(beg + i, beg +i+ sz, std::min(beg +i+ 2 * sz, end));
+                merge(beg + i, beg + i + sz, std::min(beg + i + 2 * sz, end));
             }
         }
     }
@@ -257,6 +257,87 @@ template<typename Itr>
 void mergeBUSort(Itr beg, Itr end) {
     _MergeBU<Itr>(beg, end);
 }
+
+template<typename Itr>
+class _QuickSort {
+private:
+    Random random;
+    const int CUTOFF = 15;
+
+    Itr partition(Itr beg, Itr end) {
+        Itr i = beg, j = end;
+        // 随机选取切分元素，避免数组逆序造成效率低下
+        auto p = beg + random.uniformInt(end - beg - 1);
+        std::swap(*p, *beg);
+        auto pivot = *beg;
+        while (true) {
+            while (*(++i) < pivot)
+                if (i == end - 1)
+                    break;
+            while (*(--j) > pivot)
+                if (j == beg)
+                    break;
+            if (i >= j)
+                break;
+            std::swap(*i, *j);
+        }
+        std::swap(*beg, *j);
+        return j;
+    }
+
+    void _sort(Itr beg, Itr end) {
+        /*
+         if (end - 1 <= beg)
+             return;
+        */
+        // 改进，小数组使用插入排序
+        if (end - beg <= CUTOFF) {
+            insertionSortX(beg, end);
+            return;
+        }
+        auto pivot = partition(beg, end);
+        if (pivot != beg)
+            sort(beg, pivot);
+        if (pivot != end - 1)
+            sort(pivot + 1, end);
+    }
+
+    // 重复多
+    void _sort3way(Itr beg, Itr end) {
+        if (end - beg <= 1)
+            return;
+        auto lt = beg, i = beg + 1, gt = end - 1;
+        auto pivot = *beg;
+        // [beg,lt-1] [lt,gt][gt+1,end)
+        while (i <= gt) {
+            if (*i < pivot)
+                std::swap(*lt++, *i++);
+            else if (*i > pivot)
+                std::swap(*i, *gt--);
+            else
+                ++i;
+        }
+        _sort3way(beg, lt);
+        _sort3way(gt + 1, end);
+    }
+
+    void sort3way(Itr beg, Itr end) {
+        // random.shuffle(beg,end);
+        _sort3way(beg, end);
+    }
+
+public:
+    _QuickSort(Itr beg, Itr end) {
+        random.setSeed(time(nullptr));
+        _sort(beg, end);
+    }
+};
+
+template<typename Itr>
+void quickSort(Itr beg, Itr end) {
+    _QuickSort<Itr>(beg, end);
+}
+
 
 /*
  * #############
@@ -291,6 +372,8 @@ double testSort(const string &s, vector<double> &v) {
         mergeSortX(beg, end);
     else if ("MergeBUSort" == s)
         mergeBUSort(beg, end);
+    else if ("QuickSort" == s)
+        quickSort(beg, end);
 
     return stopwatch.elapsedTime();
 }
@@ -335,6 +418,7 @@ void testSorting(int N, int T) {
     double t5 = testRandomInput(testSort, "MergeSort", N, T);
     double t6 = testRandomInput(testSort, "MergeSortX", N, T);
     double t7 = testRandomInput(testSort, "MergeBUSort", N, T);
+    double t8 = testRandomInput(testSort, "QuickSort", N, T);
 
     cout << "##########\n" << "the speed ratio :  \n";
     cout << "InsertionSort / SelectionSort = " << t1 / t2 << "\n";
@@ -342,7 +426,8 @@ void testSorting(int N, int T) {
     cout << "ShellSort / SelectionSort = " << t1 / t4 << "\n";
     cout << "MergeSort / SelectionSort = " << t1 / t5 << "\n";
     cout << "MergeSortX / SelectionSort = " << t1 / t6 << "\n";
-    cout << "MergeBUSort / SelectionSort = " << t1 / t7 << "\n" << endl;
+    cout << "MergeBUSort / SelectionSort = " << t1 / t7 << "\n";
+    cout << "QuickSort / SelectionSort = " << t1 / t8 << "\n" << endl;
 }
 
 #endif //ALGORITHM_SORT_H
