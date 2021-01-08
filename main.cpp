@@ -3,11 +3,13 @@
 #include "FUNDAMENTALS/UF.h"
 #include "SORTING/sort.h"
 #include "SEARCHING/ST.h"
+#include "SEARCHING/HashST.h"
 
 
 int main() {
     //BinarySearch::test();
     //UF::test();
     //testSorting(10000,10);
-    testST();
+//    testST();
+   testHash(10000000);
 }
