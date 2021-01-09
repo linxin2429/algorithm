@@ -4,7 +4,7 @@
 #include "SORTING/sort.h"
 #include "SEARCHING/ST.h"
 #include "SEARCHING/HashST.h"
-
+#include "SEARCHING/Tree.h"
 
 int main() {
     //BinarySearch::test();
