@@ -143,24 +143,107 @@ public:
     }
 };
 
+template<typename Key, typename Value, typename Func = std::hash<Key>>
+class LinearProbingHashST {
+private:
+    int N;
+    int M;
+    vector<pair<Key, Value>> st;
+
+    void resize(int cap) {
+        LinearProbingHashST<Key, Value> t(cap);
+        for (int i = 0; i < M; ++i) {
+            if (st[i].first != Key())
+                t.put(st[i].first, st[i].second);
+        }
+        M = t.M;
+        st = std::move(t.st);
+    }
+
+public:
+    LinearProbingHashST(int capacity = 16) : N(0), M(capacity), st(M) {}
+
+    int hash(const Key &key) {
+        return (Func{}(key) & 0x7fffffff) % M;
+    }
+
+    void put(const Key &key, const Value &value) {
+        if (N >= M / 2)resize(2 * M);
+        int i;
+        for (i = hash(key); st[i].first != Key(); i = (i + 1) % M)
+            if (st[i].first == key) {
+                st[i].second = value;
+                return;
+            }
+        st[i] = make_pair(key, value);
+        N++;
+    }
+
+    Value get(const Key &key) {
+        for (int i = hash(key); st[i].first != Key(); i = (i + 1) % M)
+            if (st[i].first == key)
+                return st[i].second;
+        return Value();
+    }
+
+    bool isEmpty() {
+        return N == 0;
+    }
+
+    int size(){return N;}
+
+    bool contains(const Key &key) {
+        return get(key) != Value();
+    }
+
+    void deleteKey(const Key &key) {
+        if (!contains(key))
+            return;
+        int i = hash(key);
+        while (key != st[i].first)
+            i = (i + 1) % M;
+        st[i] = make_pair(Key(), Value());
+        i = (i + 1) % M;
+        while (st[i].first != Key()) {
+            pair<Key, Value> tmp = st[i];
+            st[i] = {Key(), Value()};
+            N--;
+            put(tmp.first, tmp.second);
+            i = (i + 1) % M;
+        }
+        if (N > 0 && N == M / 8)resize(M / 2);
+    }
+
+    vector<pair<Key,Value>> toArray(){
+        vector<pair<Key,Value>> array;
+        for (int i = 0; i < M; ++i) {
+            if (st[i].first != Key() )
+                array.push_back(st[i]);
+        }
+        return array;
+    }
+
+};
+
 #include "../FUNDAMENTALS/random.h"
 
 
 void testHash(int N) {
     Random random;
-    SequentialChainingHashST<int, double> st;
-    vector<double> ran(N);
-    for (int i = 0; i < N; ++i) {
+    //SequentialChainingHashST<int, double> st;
+    LinearProbingHashST<int,double> st;
+    vector<double> ran(N+1);
+    for (int i = 1; i <= N; ++i) {
         ran[i] = random.uniform();
     }
-    for (int i = 0; i < N; ++i) {
+    for (int i = 1; i <= N; ++i) {
         st.put(i, ran[i]);
     }
     cout << st.size() << endl;
     for (int i = 0; i < N; ++i) {
-        int j = random.uniformInt(N-1);
+        int j = random.uniformInt(1,N );
         if (!st.contains(j)) {
-            cout << j <<"error"<<endl;
+            cout << j << "error" << endl;
             return;
         } else if (ran[j] != st.get(j)) {
             cout << "error" << endl;
