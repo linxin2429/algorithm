@@ -5,6 +5,7 @@
 #include "SEARCHING/HashST.h"
 #include "SEARCHING/Tree.h"
 #include "GRAPHS/Graph.h"
+#include "GRAPHS/Digraph.h"
 
 int main() {
     //BinarySearch::test();
