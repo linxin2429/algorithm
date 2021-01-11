@@ -7,14 +7,16 @@
 #include "GRAPHS/Graph.h"
 #include "GRAPHS/Digraph.h"
 #include "GRAPHS/EdgeWeightedGraph.h"
+#include "GRAPHS/SP.h"
 
 int main() {
-    //BinarySearch::test();
-    //UF::test();
-    //testSorting(10000,10);
+//    BinarySearch::test();
+//    UF::test();
+//    testSorting(10000, 10);
 //    testST();
-//   testHash(10000000);
+//    testHash(10000000);
 //    testGraph();
-//testDG();
-testEWG();
+//    testDG();
+//    testEWG();
+    testSP();
 }
