@@ -6,6 +6,7 @@
 #include "SEARCHING/Tree.h"
 #include "GRAPHS/Graph.h"
 #include "GRAPHS/Digraph.h"
+#include "GRAPHS/EdgeWeightedGraph.h"
 
 int main() {
     //BinarySearch::test();
@@ -14,5 +15,6 @@ int main() {
 //    testST();
 //   testHash(10000000);
 //    testGraph();
-testDG();
+//testDG();
+testEWG();
 }

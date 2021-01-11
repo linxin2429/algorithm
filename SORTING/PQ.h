@@ -81,6 +81,120 @@ public:
     }
 };
 
+template<typename T, typename Compare = std::less<T>>
+class IndexPQ
+{
+private:
+    int N = 0;
+    std::vector<int> pq; //索引二叉堆
+    std::vector<int> qp; //逆序：qp[pq[i]]=pq[qp[i]]=i
+    std::vector<T> keys;
+    //备注：qp[indx]是位置。keys[qp[index]]=key, pq[qp[index]]=index
+    Compare comp;
+public:
+    explicit IndexPQ(int maxN)
+            :pq(maxN + 1), qp(maxN + 1), keys(maxN + 1)
+    {
+        for (int & i : qp)
+            i = -1;
+    }
+    void push(int i, T k)
+    {
+        if (contains(i))
+            return;
+        ++N;
+        qp[i] = N;
+        keys[i] = k;
+        pq[N] = i;
+        swim(N);
+    }
+    int indexOfTop()
+    {
+        return pq[1];
+    }
+    T top()
+    {
+        return keys[pq[1]];
+    }
 
+    int pop()
+    {//删除key值最小的项，返回其对应的索引
+        int min = pq[1];
+        exch(1, N--);
+        sink(1);
+
+        qp[min] = -1;
+        pq[N + 1] = -1;
+        return min;
+    }
+
+    T keyOf(int i)
+    {//返回索引所对应的键值
+        _ASSERT(contains(i));
+        return keys[i];
+    }
+
+    void changeKey(int i, T k)
+    {
+        if (compare(k, keys[i]))
+        {
+            keys[i] = k;
+            sink(qp[i]);
+        }
+        else
+        {
+            keys[i] = k;
+            swim(qp[i]);
+        }
+    }
+
+    bool contains(int i) { return qp[i] != -1; }
+    void deleteT(int i)
+    {
+        _ASSERT(contains(i));
+        int loc = qp[i];
+        exch(loc, N--);
+        swim(loc);
+        swim(loc);
+        qp[i] = -1;
+    }
+
+    bool isEmpty() { return N == 0; }
+    int size() { return N; }
+
+private:
+    bool compare(int i, int j)
+    {
+        return comp(keys[pq[i]], keys[pq[j]]);
+    }
+
+    void exch(int i, int j)
+    {
+        //两个位置的index互换
+        std::swap(pq[i], pq[j]);
+        std::swap(qp[pq[i]], qp[pq[j]]);
+    }
+
+    void swim(int k)
+    {
+        while (k > 1 && compare(k >> 1, k))
+        {
+            exch(k, k >> 1);
+            k >>= 1;
+        }
+    }
+
+    void sink(int k)
+    {
+        while ((k << 1) <= N)
+        {
+            int j = k << 1;
+            if (j < N && compare(j, j + 1)) ++j;
+            if (!compare(k, j))break;
+            exch(k, j);
+            k = j;
+        }
+    }
+};
 
 #endif //ALGORITHM_PQ_H
