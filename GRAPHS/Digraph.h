@@ -251,7 +251,7 @@ public:
     bool reachable(int v,int w){
         return all[v].marked(w);
     }
-}
+};
 
 void testDG() {
     ifstream in("../FILE/tinyDG.txt");
