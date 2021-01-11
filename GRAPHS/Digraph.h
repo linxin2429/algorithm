@@ -54,7 +54,7 @@ public:
 
     CIterator end(int v) const { return adj[v].cend(); }
 
-    Digraph reverse() {
+    Digraph reverse() const {
         Digraph digraph(V);
         for (int i = 0; i < V; ++i) {
             for (auto itr = begin(i); itr != end(i); itr++)
@@ -63,11 +63,11 @@ public:
         return digraph;
     }
 
-    string toString() {
+    string toString() const {
         std::string ret = std::to_string(V) + " vertices, " + std::to_string(E) + "edges\n";
         for (int v = 0; v < V; ++v) {
             ret += std::to_string(v) + ": ";
-            for (auto w : adj[v])
+            for (auto &w : adj[v])
                 ret += std::to_string(w) + " ";
             ret += '\n';
         }
@@ -93,7 +93,7 @@ public:
     }
 
     DirectedDFS(const Digraph &G, const vector<int> &sources) : mark(G.getV(), false) {
-        for (auto s:sources)
+        for (auto &s:sources)
             if (!mark[s])
                 dfs(G, s);
     }
@@ -178,7 +178,7 @@ public:
     vector<int> reversePost() {
         vector<int> ret;
         stack<int> tmp = ReversePost;
-        while (!tmp.empty()){
+        while (!tmp.empty()) {
             ret.push_back(tmp.top());
             tmp.pop();
         }
@@ -189,9 +189,10 @@ public:
 
 class Topological {
     vector<int> Order;
+
     explicit Topological(const Digraph &G) {
         DirectedCycle cyclefinder(G);
-        if (!cyclefinder.hasCycle()){
+        if (!cyclefinder.hasCycle()) {
             DepthFirstOrder dfs(G);
             Order = dfs.reversePost();
         }
@@ -205,17 +206,66 @@ class Topological {
         return Order;
     }
 };
-class SCC{
-    vector<bool>mark;
-    vector<int>id;
-    int count{};
-    void dfs(const Digraph&G){
 
+class SCC {//Kosaraju算法
+    vector<bool> mark;
+    vector<int> id;
+    int count;
+
+    void dfs(const Digraph &G, int v) {
+        mark[v] = true;
+        id[v] = count;
+        for (auto itr = G.begin(v); itr != G.end(v); itr++)
+            if (!mark[*itr])
+                dfs(G, *itr);
     }
+
 public:
-    SCC(const Digraph&G):mark(G.getV(),false),id(G.getV()){
-
+    explicit SCC(const Digraph &G) : mark(G.getV(), false), id(G.getV()), count(0) {
+        DepthFirstOrder order(G.reverse());
+        for (auto &item : order.reversePost())
+            if (!mark[item]) {
+                dfs(G, item);
+                count++;
+            }
     }
+
+    bool stronglyConnected(int v, int w) const {
+        return id[v] == id[w];
+    }
+
+    int getId(int v) const { return id[v]; }
+
+    int getCount(int v) const { return count; }
 };
+
+class TransitiveClosure {
+private:
+    vector<DirectedDFS> all;
+public:
+    explicit TransitiveClosure(const Digraph &G) {
+        for (int v = 0; v < G.getV(); ++v) {
+             all.emplace_back(G, v);
+        }
+    }
+    bool reachable(int v,int w){
+        return all[v].marked(w);
+    }
+}
+
+void testDG() {
+    ifstream in("../FILE/tinyDG.txt");
+    Digraph G(in);
+    SCC scc(G);
+    map<int, vector<int>> map;
+    for (int i = 0; i < G.getV(); ++i)
+        map[scc.getId(i)].push_back(i);
+    for (const auto &itr : map) {
+        for (auto &item : itr.second) {
+            cout << item << "  ";
+        }
+        cout << endl;
+    }
+}
 
 #endif //ALGORITHM_DIGRAPH_H

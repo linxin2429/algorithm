@@ -13,5 +13,6 @@ int main() {
     //testSorting(10000,10);
 //    testST();
 //   testHash(10000000);
-    testGraph();
+//    testGraph();
+testDG();
 }
