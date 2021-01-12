@@ -8,6 +8,7 @@
 #include "GRAPHS/Digraph.h"
 #include "GRAPHS/EdgeWeightedGraph.h"
 #include "GRAPHS/SP.h"
+#include "STRINGS/stringsort.h"
 
 int main() {
 //    BinarySearch::test();
@@ -18,5 +19,6 @@ int main() {
 //    testGraph();
 //    testDG();
 //    testEWG();
-    testSP();
+//    testSP();
+    testStringSort();
 }

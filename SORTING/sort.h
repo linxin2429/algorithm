@@ -1,7 +1,7 @@
 //
 // Created by 邓鑫林 on 2021/1/4.
 //
-#ifndef ALGORITHM_SORT_H
+#ifndef ALGORITHM_STRINGSORT_H
 #define ALGORITHM_SORT_H
 
 #include <type_traits>
@@ -441,4 +441,4 @@ void testSorting(int N, int T) {
     cout << "HeapSort / SelectionSort = " << t1 / t9 << "\n" << endl;
 }
 
-#endif //ALGORITHM_SORT_H
+#endif //ALGORITHM_STRINGSORT_H
