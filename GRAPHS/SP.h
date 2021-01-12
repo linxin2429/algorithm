@@ -224,7 +224,7 @@ private:
     vector<int> Post; // 后序
     stack<int> ReversePost; // 逆后序
 
-    void dfs(const EdgeWeightedDigraph& G, int v) {
+    void dfs(const EdgeWeightedDigraph &G, int v) {
         Pre.push_back(v);
         mark[v] = true;
         for (auto &e : G.adj(v))
@@ -283,37 +283,118 @@ public:
 class AcyclicSP { //无环加权有向图
     vector<DirectedEdge> edgeTo_;
     vector<double> distTo_;
-    void relax(const EdgeWeightedDigraph&G,int v){
-        for (auto &e : G.adj(v)){
-            int from = e.from(),to = e.to();
-            if (distTo_[to] > distTo_[from] + e.weight() ){
+
+    void relax(const EdgeWeightedDigraph &G, int v) {
+        for (auto &e : G.adj(v)) {
+            int from = e.from(), to = e.to();
+            if (distTo_[to] > distTo_[from] + e.weight()) {
                 distTo_[to] = distTo_[from] + e.weight();
                 edgeTo_[to] = e;
             }
         }
     }
+
 public:
     AcyclicSP(const EdgeWeightedDigraph &G, int s) : edgeTo_(G.V()), distTo_(G.V(), INT_MAX) {
         distTo_[s] = 0.0;
         EWDTopological top(G);
-        for(auto &v : top.order())
-            relax(G,v);
+        for (auto &v : top.order())
+            relax(G, v);
     }
-    double distTo(int v){return distTo_[v];}
-    bool hasPathTo(int v){return distTo_[v] < INT_MAX;}
-    vector<DirectedEdge> pathTo(int v){
+
+    double distTo(int v) { return distTo_[v]; }
+
+    bool hasPathTo(int v) { return distTo_[v] < INT_MAX; }
+
+    vector<DirectedEdge> pathTo(int v) {
         vector<DirectedEdge> path;
         stack<DirectedEdge> stack;
-        for (DirectedEdge e = edgeTo_[v];  e != DirectedEdge() ; e = edgeTo_[e.from()]) {
+        for (DirectedEdge e = edgeTo_[v]; e != DirectedEdge(); e = edgeTo_[e.from()]) {
             stack.push(e);
         }
-        while (!stack.empty()){
+        while (!stack.empty()) {
             path.push_back(stack.top());
             stack.pop();
         }
         return path;
     }
 };
+
+class BellmanFordSP {
+    vector<double> distTo_;
+    vector<DirectedEdge> edgeTo_;
+    vector<bool> onQ;
+    queue<int> queue;
+    int cost;
+    vector<DirectedEdge> cycle_;
+
+    void relax(const EdgeWeightedDigraph &G, int v) {
+        for (auto &e : G.adj(v)) {
+            int to = e.to();
+            if (distTo_[to] > distTo_[v] + e.weight()) {
+                distTo_[to] = distTo_[v] + e.weight();
+                edgeTo_[to] = e;
+                if (!onQ[to]) {
+                    queue.push(to);
+                    onQ[to] = true;
+                }
+            }
+            if (cost++ % G.V() == 0)
+                findNegativeCycle();
+        }
+    }
+
+    void findNegativeCycle() {
+        int V = edgeTo_.size();
+        EdgeWeightedDigraph spt(V);
+        for (int v = 0; v < V; ++v)
+            if (edgeTo_[v] != DirectedEdge())
+                spt.addEdge(edgeTo_[v]);
+        EdgeWeightedDirectedCycle cf(spt);
+        cycle_ = cf.cycle();
+
+    }
+
+
+public:
+    BellmanFordSP(const EdgeWeightedDigraph &G, int s) :
+            distTo_(G.V(), INT_MAX), edgeTo_(G.V()), onQ(G.V(), false), cost(0) {
+        distTo_[s] = 0.0;
+        queue.push(s);
+        onQ[s] = true;
+        while (!queue.empty() && !hasNegativeCycle()) {
+            int v = queue.front();
+            queue.pop();
+            onQ[v] = false;
+            relax(G,v);
+        }
+    }
+
+    double distTo(int v) const { return distTo_[v]; }
+
+    bool hasPathTo(int v) const { return distTo_[v] < INT_MAX; }
+
+    vector<DirectedEdge> pathTo(int v) {
+        vector<DirectedEdge> path;
+        stack<DirectedEdge> stack;
+        for (DirectedEdge e = edgeTo_[v]; e != DirectedEdge(); e = edgeTo_[e.from()]) {
+            stack.push(e);
+        }
+        while (!stack.empty()) {
+            path.push_back(stack.top());
+            stack.pop();
+        }
+        return path;
+    }
+
+    bool hasNegativeCycle() const {return !cycle_.empty();}
+
+    vector<DirectedEdge> negativeCycle() const {return cycle_;}
+
+
+};
+
+
 
 void testSP(const string &str) {
     ifstream in(str);
