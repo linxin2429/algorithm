@@ -127,6 +127,7 @@ private:
         onStack[v] = false;
     }
 
+
 public:
     explicit DirectedCycle(const Digraph &G) :
             mark(G.getV(), false), edgeTo(G.getV()), onStack(G.getV(), false) {
@@ -163,6 +164,7 @@ private:
         ReversePost.push(v);
     }
 
+
 public:
     explicit DepthFirstOrder(const Digraph &G) : mark(G.getV(), false) {
         for (int v = 0; v < G.getV(); ++v) {
@@ -170,6 +172,7 @@ public:
                 dfs(G, v);
         }
     }
+
 
     vector<int> pre() { return Pre; }
 
@@ -189,7 +192,7 @@ public:
 
 class Topological {
     vector<int> Order;
-
+public:
     explicit Topological(const Digraph &G) {
         DirectedCycle cyclefinder(G);
         if (!cyclefinder.hasCycle()) {
@@ -197,6 +200,7 @@ class Topological {
             Order = dfs.reversePost();
         }
     }
+
 
     bool isDAG() {//有向无环图
         return !Order.empty();
@@ -245,10 +249,11 @@ private:
 public:
     explicit TransitiveClosure(const Digraph &G) {
         for (int v = 0; v < G.getV(); ++v) {
-             all.emplace_back(G, v);
+            all.emplace_back(G, v);
         }
     }
-    bool reachable(int v,int w){
+
+    bool reachable(int v, int w) {
         return all[v].marked(w);
     }
 };

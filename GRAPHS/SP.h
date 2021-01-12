@@ -5,6 +5,7 @@
 #ifndef ALGORITHM_SP_H
 #define ALGORITHM_SP_H
 
+#include <iomanip>
 
 class DirectedEdge {
     int v_, w_;
@@ -157,6 +158,163 @@ public:
 
 };
 
+class EdgeWeightedDirectedCycle {
+private:
+    vector<bool> mark_;
+    vector<DirectedEdge> edgeTo_;
+    vector<bool> onStack_;
+    stack<DirectedEdge> cycle_;    // directed cycle (or null if no such cycle)
+
+public:
+
+    explicit EdgeWeightedDirectedCycle(const EdgeWeightedDigraph &G) :
+            mark_(G.V(), false), edgeTo_(G.V()), onStack_(G.V()) {
+        cycle_ = stack<DirectedEdge>();
+        for (int v = 0; v < G.V(); v++)
+            if (!mark_[v]) dfs(G, v);
+    }
+
+private:
+
+    void dfs(const EdgeWeightedDigraph &G, int v) {
+        onStack_[v] = true;
+        mark_[v] = true;
+        for (DirectedEdge &e : G.adj(v)) {
+            int w = e.to();
+            // short circuit if directed cycle found
+            if (!cycle_.empty()) return;
+                // found new vertex, so recur
+            else if (!mark_[w]) {
+                edgeTo_[w] = e;
+                dfs(G, w);
+            }
+                // trace back directed cycle
+            else if (onStack_[w]) {
+                DirectedEdge f = e;
+                while (f.from() != w) {
+                    cycle_.push(f);
+                    f = edgeTo_[f.from()];
+                }
+                cycle_.push(f);
+                return;
+            }
+        }
+        onStack_[v] = false;
+    }
+
+public:
+
+    bool hasCycle() { return !cycle_.empty(); }
+
+    vector<DirectedEdge> cycle() {
+        vector<DirectedEdge> ret;
+        stack<DirectedEdge> stack = cycle_;
+        while (!stack.empty()) {
+            ret.push_back(stack.top());
+            stack.pop();
+        }
+        return ret;
+    }
+};
+
+class EWDDepthFirstOrder { // 规避头文件交叉引用，重写一遍
+private:
+    vector<bool> mark;
+    vector<int> Pre; //前序
+    vector<int> Post; // 后序
+    stack<int> ReversePost; // 逆后序
+
+    void dfs(const EdgeWeightedDigraph& G, int v) {
+        Pre.push_back(v);
+        mark[v] = true;
+        for (auto &e : G.adj(v))
+            if (!mark[e.to()])
+                dfs(G, e.to());
+        Post.push_back(v);
+        ReversePost.push(v);
+    }
+
+public:
+
+    explicit EWDDepthFirstOrder(const EdgeWeightedDigraph &G) : mark(G.V(), false) {
+        for (int v = 0; v < G.V(); ++v) {
+            if (!mark[v])
+                dfs(G, v);
+        }
+    }
+
+    vector<int> pre() { return Pre; }
+
+    vector<int> post() { return Post; }
+
+    vector<int> reversePost() {
+        vector<int> ret;
+        stack<int> tmp = ReversePost;
+        while (!tmp.empty()) {
+            ret.push_back(tmp.top());
+            tmp.pop();
+        }
+        return ret;
+    }
+
+};
+
+class EWDTopological {
+    vector<int> Order;
+public:
+
+    explicit EWDTopological(const EdgeWeightedDigraph &G) {
+        EdgeWeightedDirectedCycle cycleFinder(G);
+        if (!cycleFinder.hasCycle()) {
+            EWDDepthFirstOrder dfs(G);
+            Order = dfs.reversePost();
+        }
+    }
+
+    bool isDAG() {//有向无环图
+        return !Order.empty();
+    }
+
+    vector<int> order() {
+        return Order;
+    }
+};
+
+class AcyclicSP { //无环加权有向图
+    vector<DirectedEdge> edgeTo_;
+    vector<double> distTo_;
+    void relax(const EdgeWeightedDigraph&G,int v){
+        for (auto &e : G.adj(v)){
+            int from = e.from(),to = e.to();
+            if (distTo_[to] > distTo_[from] + e.weight() ){
+                distTo_[to] = distTo_[from] + e.weight();
+                edgeTo_[to] = e;
+            }
+        }
+    }
+public:
+    AcyclicSP(const EdgeWeightedDigraph &G, int s) : edgeTo_(G.V()), distTo_(G.V(), INT_MAX) {
+        distTo_[s] = 0.0;
+        EWDTopological top(G);
+        for(auto &v : top.order())
+            relax(G,v);
+    }
+    double distTo(int v){return distTo_[v];}
+    bool hasPathTo(int v){return distTo_[v] < INT_MAX;}
+    vector<DirectedEdge> pathTo(int v){
+        vector<DirectedEdge> path;
+        stack<DirectedEdge> stack;
+        for (DirectedEdge e = edgeTo_[v];  e != DirectedEdge() ; e = edgeTo_[e.from()]) {
+            stack.push(e);
+        }
+        while (!stack.empty()){
+            path.push_back(stack.top());
+            stack.pop();
+        }
+        return path;
+    }
+};
+
 void testSP(const string &str) {
     ifstream in(str);
     EdgeWeightedDigraph G(in);
@@ -166,8 +324,8 @@ void testSP(const string &str) {
         for (int j = 0; j < G.V(); ++j) {
             cout << i << " to " << j << "\n";
             for (auto &path :sp.path(i, j))
-                cout << path.toString() ;
-            cout << "\ndist: " << sp.dist(i, j) << "\n"<<endl;
+                cout << path.toString();
+            cout << "\ndist: " << sp.dist(i, j) << "\n" << endl;
         }
     }
 }
