@@ -9,6 +9,7 @@
 #include "GRAPHS/EdgeWeightedGraph.h"
 #include "GRAPHS/SP.h"
 #include "STRINGS/stringsort.h"
+#include "STRINGS/Trie.h"
 
 int main() {
 //    BinarySearch::test();
